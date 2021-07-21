@@ -111,7 +111,7 @@ class CheckoutPage {
 			],
 			[
 				'a.pp_propname ' . $dbw->buildLike( 'checkoutExpiry.', $dbw->anyString() ),
-				'a.pp_value < ' . wfTimestampNow(),
+				'a.pp_value < ' . $dbw->timestamp( wfTimestampNow() ),
 				'b.pp_propname' => 'accessPage'
 			],
 			__METHOD__,
