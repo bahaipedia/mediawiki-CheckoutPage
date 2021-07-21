@@ -47,20 +47,48 @@ class CheckoutPage {
 		}
 
 		// TODO: add username to the page $options['accessPage'],
-		// but only if it has less than $options['maxConcurrent'] names already,
-		// and remember the time when checkout should be revoked (NOW timestamp + $options['checkoutDays']).
+		// but only if it has less than $options['maxConcurrent'] names already.
+		$userList = new CheckoutPageUserList( Title::newFromText( $options['accessPage'] ) );
+
+		$currentUserName = $user->getName();
+		$usernames = $userList->getUsernames();
+
+		foreach ( $existingUsernames as $name ) {
+			if ( $name == $currentUserName ) {
+				// This user already has this page checked out.
+				// Can easily happen when user clicks on "Check out" button twice.
+				return Status::newGood();
+			}
+		}
+
+		if ( count( $usernames ) >= (int)$options['maxConcurrent'] ) {
+			return Status::newFatal( 'checkoutpage-user-limit-reached' );
+		}
+
+		$status = $userList->addUser( $user );
+		if ( !$status->isOK() ) {
+			// Failed to add.
+			return $status;
+		}
+
+		// Remember the time when checkout should be revoked (NOW timestamp + $options['checkoutDays']).
 		$ts = new MWTimestamp();
 		$ts->timestamp->modify( '+' . intval( $options['checkoutDays'] ) . ' days' );
 		$expiryTimestamp = $ts->getTimestamp( TS_MW );
 
-		$accessPageTitle = Title::newFromText( $options['accessPage'] );
-		$accessPage = new WikiPage( $accessPageTitle );
-		$content = $accessPage->getContent( RevisionRecord::RAW );
+		$dbw = wfGetDB( DB_MASTER );
+		$dbw->insert( 'page_props',
+			[
+				'pp_page' => $pageId,
+				'pp_propname' => 'checkoutExpiry.' . $currentUserName,
+				'pp_value' => $expiryTimestamp
+			],
+			__METHOD__,
+			[ 'IGNORE' ]
+		);
 
-		// TODO
-
-		return Status::newFatal( 'not yet implemented' );
-		// return Status::newGood();
+		// Successfully checked out.
+		return Status::newGood();
 	}
 
 	/**
