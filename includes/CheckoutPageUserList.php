@@ -39,17 +39,19 @@ class CheckoutPageUserList {
 	}
 
 	public function getUsernames() {
-		if ( $this->usernames === null ) {
-			$this->loadUsernames();
-		}
-
+		$this->loadUsernames();
 		return $this->usernames;
 	}
 
 	/**
-	 * Populate $this->usernames array. Used in getUsernames().
+	 * Populate $this->usernames array. Used in getUsernames(), addUser() and removeUser().
 	 */
 	protected function loadUsernames() {
+		if ( $this->usernames !== null ) {
+			// Already loaded.
+			return;
+		}
+
 		$page = new WikiPage( $this->title );
 		$content = $page->getContent( RevisionRecord::RAW );
 
@@ -63,7 +65,7 @@ class CheckoutPageUserList {
 		$this->usernames = [];
 		$lines = preg_split( '/[\r\n]+/', $text );
 		foreach ( $lines as $line ) {
-			$username = preg_replace( '^\*\s*', $line );
+			$username = preg_replace( '/^\*\s*/', '', $line, 1 );
 			if ( $username ) {
 				$this->usernames[] = $username;
 			}
@@ -76,6 +78,8 @@ class CheckoutPageUserList {
 	 * @return Status
 	 */
 	public function addUser( User $user ) {
+		$this->loadUsernames();
+
 		$this->usernames[] = $user->getName();
 		return $this->persist();
 	}
@@ -86,10 +90,12 @@ class CheckoutPageUserList {
 	 * @return Status
 	 */
 	public function removeUser( User $user ) {
+		$this->loadUsernames();
+
 		$oldCount = count( $this->usernames );
 		$excludedName = $user->getName();
 
-		$this->usernames = array_filter( $this->usernames, function ( $value ) {
+		$this->usernames = array_filter( $this->usernames, function ( $value ) use ( $excludedName ) {
 			return $value !== $excludedName;
 		} );
 		if ( count( $this->usernames ) === $oldCount ) {

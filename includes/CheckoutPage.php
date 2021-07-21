@@ -53,7 +53,7 @@ class CheckoutPage {
 		$currentUserName = $user->getName();
 		$usernames = $userList->getUsernames();
 
-		foreach ( $existingUsernames as $name ) {
+		foreach ( $usernames as $name ) {
 			if ( $name == $currentUserName ) {
 				// This user already has this page checked out.
 				// Can easily happen when user clicks on "Check out" button twice.
@@ -81,7 +81,7 @@ class CheckoutPage {
 			[
 				'pp_page' => $pageId,
 				'pp_propname' => 'checkoutExpiry.' . $currentUserName,
-				'pp_value' => $expiryTimestamp
+				'pp_value' => $dbw->timestamp( $expiryTimestamp )
 			],
 			__METHOD__,
 			[ 'IGNORE' ]
@@ -95,9 +95,62 @@ class CheckoutPage {
 	 * Revoke all checkouts that have expired. This can be called periodically.
 	 * @param User $user
 	 * @param Title $title
-	 * @return Status
+	 * @return bool True if no errors, false otherwise.
 	 */
 	public static function revokeExpiredCheckouts() {
-		// TODO
+		$dbw = wfGetDB( DB_MASTER );
+		$res = $dbw->select(
+			[
+				'a' => 'page_props',
+				'b' => 'page_props'
+			],
+			[
+				'a.pp_propname AS prefixedUsername',
+				'b.pp_value AS accessPage',
+				'a.pp_page AS articleId'
+			],
+			[
+				'a.pp_propname ' . $dbw->buildLike( 'checkoutExpiry.', $dbw->anyString() ),
+				'a.pp_value < ' . wfTimestampNow(),
+				'b.pp_propname' => 'accessPage'
+			],
+			__METHOD__,
+			[],
+			[
+					'b' => [ 'INNER JOIN', [
+						'a.pp_page=b.pp_page'
+					] ],
+			]
+		);
+		if ( $res->numRows() === 0 ) {
+			// Nothing expired.
+			return Status::newGood();
+		}
+
+		$allSuccessful = true;
+		foreach ( $res as $row ) {
+			$username = preg_replace( '/^checkoutExpiry\./', '', $row->prefixedUsername, 1 );
+			$accessPageName = $row->accessPage;
+
+			// TODO: can reduce the number of edits when 2+ usernames must be removed from the same access page,
+			// which is possible if the cron job that calls revokeExpiredCheckouts() is invoked rarely.
+			// Currently removal of each username will result in 1 edit.
+			$userList = new CheckoutPageUserList( Title::newFromText( $accessPageName ) );
+			$status = $userList->removeUser( User::newFromName( $username ) );
+
+			if ( !$status->isOK() ) {
+				// Not a fatal error, so that we can continue revoking other checkouts.
+				error_log( "Failed to revoke access of $username to $accessPageName."  );
+				$allSuccessful = false;
+				continue;
+			}
+
+			$dbw->delete( 'page_props', [
+				'pp_propname' => $row->prefixedUsername,
+				'pp_page' => $row->articleId
+			], __METHOD__ );
+		}
+
+		return $allSuccessful;
 	}
 }
