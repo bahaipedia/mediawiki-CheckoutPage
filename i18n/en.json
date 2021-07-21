@@ -1,0 +1,8 @@
+{
+	"@metadata": {
+		"authors": []
+	},
+	"checkoutpage": "",
+	"checkoutpage-desc": "Allows up to N readers to simultaneously access the same page from the library.",
+	"checkoutpage-missing-params": "Error: #checkout: parameters access_page, max_concurrent_users (integer >= 1), checkout_days (integer >= 1) are mandatory."
+}
