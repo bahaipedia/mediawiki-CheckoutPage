@@ -24,6 +24,8 @@ class SpecialCheckoutPage extends UnlistedSpecialPage {
 	 * @param string $param
 	 */
 	public function execute( $targetPageName ) {
+		$this->requireLogin();
+
 		parent::execute( $targetPageName );
 		if ( !$targetPageName ) {
 			// Called as [[Special:CheckoutPage]] without parameter.
