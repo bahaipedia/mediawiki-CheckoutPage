@@ -9,6 +9,7 @@
 		"CheckoutPage": "SpecialCheckoutPage"
 	},
 	"AutoloadClasses": {
+		"CheckoutPage": "includes/CheckoutPage.php",
 		"CheckoutPageHooks": "includes/CheckoutPageHooks.php",
 		"SpecialCheckoutPage": "includes/SpecialCheckoutPage.php"
 	},

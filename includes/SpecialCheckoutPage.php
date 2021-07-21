@@ -31,36 +31,14 @@ class SpecialCheckoutPage extends UnlistedSpecialPage {
 		}
 
 		$title = Title::newFromText( $targetPageName );
-		$pageId = $title->getArticleID( Title::READ_LATEST );
-		if ( !$pageId ) {
-			// Page doesn't exist.
-			throw new ErrorPageError( 'nopagetitle', 'nopagetext' );
+		$status = CheckoutPage::grantAccess( $this->getUser(), $title );
+		if ( !$status->isOK() ) {
+			$this->getOutput()->addHTML( Xml::tags( 'div', [ 'class' => 'error' ], $status->getHTML() ) );
+			return;
 		}
 
-		// Determine options like "checkoutDays" that are set by {{#checkout:}} syntax on that page.
-		$dbr = wfGetDB( DB_REPLICA );
-		$res = $dbr->select( 'page_props',
-			[ 'pp_propname AS name', 'pp_value AS value' ],
-			[
-				'pp_page' => $pageId,
-				'pp_propname' => [ 'maxConcurrent', 'checkoutDays', 'accessPage' ]
-			],
-			__METHOD__
-		);
-		if ( $res->numRows() !== 3 ) {
-			throw new ErrorPageError( 'checkoutpage-error', 'checkoutpage-not-enabled-for-page' );
-		}
-
-		$options = [];
-		foreach ( $res as $row ) {
-			$options[$row->name] = $row->value;
-		}
-
-		// TODO: add username to the page $options['accessPage'],
-		// but only if it has less than $options['maxConcurrent'] names already,
-		// and remember the time when checkout should be revoked (NOW timestamp + $options['checkoutDays']).
-
-		$this->getOutput()->addHTML( 'TODO' );
+		// If checkout was successful, return the user back to the article (it should now be readable).
+		$this->getOutput()->redirect( $title->getFullURL() );
 	}
 }
 
