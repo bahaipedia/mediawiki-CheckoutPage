@@ -11,6 +11,7 @@
 	"AutoloadClasses": {
 		"CheckoutPage": "includes/CheckoutPage.php",
 		"CheckoutPageHooks": "includes/CheckoutPageHooks.php",
+		"CheckoutPageStatus": "includes/CheckoutPageStatus.php",
 		"CheckoutPageUserList": "includes/CheckoutPageUserList.php",
 		"SpecialCheckoutPage": "includes/SpecialCheckoutPage.php"
 	},

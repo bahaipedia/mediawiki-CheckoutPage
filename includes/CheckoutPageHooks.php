@@ -51,7 +51,8 @@ class CheckoutPageHooks {
 		$pout->setProperty( 'checkoutDays', $checkoutDays );
 		$pout->setProperty( 'accessPage', $accessPage );
 
-		// When successful, {{#checkout:}} syntax is invisible.
-		return '';
+		// When successful, {{#checkout:}} will show "N days remaining, return now" link.
+		$returnLink = CheckoutPageStatus::getStatusHTML( $parser->getUser(), $parser->getTitle() );
+		return [ $returnLink, 'noparse' => true, 'isHTML' => true ];
 	}
 }
