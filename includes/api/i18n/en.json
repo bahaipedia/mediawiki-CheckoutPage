@@ -1,0 +1,12 @@
+{
+	"@metadata": {
+		"authors": [
+			"Edward Chernenko"
+		]
+	},
+	"apihelp-query+checkoutstatus-example": "Get status for article \"Restricted page\".",
+	"apihelp-query+checkoutstatus-summary": "Get checkout status of the page (available, not yet available, can return).",
+	"apihelp-query+checkoutstatus-param-title": "Title of the restricted article.",
+	"apihelp-query+checkoutstatus-param-pageid": "Page ID of the restricted article."
+}
+

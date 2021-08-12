@@ -9,6 +9,7 @@
 		"CheckoutPage": "SpecialCheckoutPage"
 	},
 	"AutoloadClasses": {
+		"ApiQueryCheckoutStatus": "includes/api/ApiQueryCheckoutStatus.php",
 		"CheckoutPage": "includes/CheckoutPage.php",
 		"CheckoutPageHooks": "includes/CheckoutPageHooks.php",
 		"CheckoutPageStatus": "includes/CheckoutPageStatus.php",
@@ -21,11 +22,15 @@
 	},
 	"MessagesDirs": {
 		"CheckoutPage": [
-			"i18n"
+			"i18n",
+			"includes/api/i18n"
 		]
 	},
 	"Hooks": {
 		"ParserFirstCallInit": "CheckoutPageHooks::onParserFirstCallInit"
+	},
+	"APIPropModules": {
+		"checkoutstatus": "ApiQueryCheckoutStatus"
 	},
 	"manifest_version": 2
 }
