@@ -91,6 +91,33 @@ class CheckoutPage {
 		return Status::newGood();
 	}
 
+
+	/**
+	 * Revoke $user's access to the page $title.
+	 * This is called when the user wants to return the book before the expiration date.
+	 *
+	 * @param User $user
+	 * @param Title $title
+	 * @return Status
+	 */
+	public static function revokeAccess( User $user, Title $title ) {
+		// To avoid code duplication, we set expiration date to "long ago in the past"
+		// and then call "revoke expired checkouts".
+		$dbw = wfGetDB( DB_MASTER );
+		$dbw->update( 'page_props',
+			[ 'pp_value' => 0 ],
+			[
+				'pp_page' => $title->getArticleID( Title::READ_LATEST ),
+				'pp_propname' => 'checkoutExpiry.' . $user->getName()
+			],
+			__METHOD__
+		);
+
+		if ( $dbw->affectedRows() > 0 ) {
+			self::revokeExpiredCheckouts();
+		}
+	}
+
 	/**
 	 * Revoke all checkouts that have expired. This can be called periodically.
 	 * @param User $user

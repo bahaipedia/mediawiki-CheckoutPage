@@ -32,15 +32,32 @@ class SpecialCheckoutPage extends UnlistedSpecialPage {
 			throw new ErrorPageError( 'notargettitle', 'notargettext' );
 		}
 
+		// We are not checking for an anti-CSRF token, because the action of checkout/return is not
+		// important enough for CSRF-caused checkout/return of the book to have any negative impact.
+		// Being able to link to [[Special:CheckoutPage/{{PAGENAME}}]], on the other hand, is quite convenient.
+
+		$out = $this->getOutput();
+		$user = $this->getUser();
 		$title = Title::newFromText( $targetPageName );
-		$status = CheckoutPage::grantAccess( $this->getUser(), $title );
+
+		if ( $this->getRequest()->getBool( 'return' ) ) {
+			// User wants to return the book.
+			CheckoutPage::revokeAccess( $user, $title );
+
+			$out->addHTML( $this->msg( 'checkoutpage-returned' )->escaped() );
+			$out->returnToMain();
+			return;
+		}
+
+		// User wants to checkout the book.
+		$status = CheckoutPage::grantAccess( $user, $title );
 		if ( !$status->isOK() ) {
-			$this->getOutput()->addHTML( Xml::tags( 'div', [ 'class' => 'error' ], $status->getHTML() ) );
+			$out->addHTML( Xml::tags( 'div', [ 'class' => 'error' ], $status->getHTML() ) );
 			return;
 		}
 
 		// If checkout was successful, return the user back to the article (it should now be readable).
-		$this->getOutput()->redirect( $title->getFullURL() );
+		$out->redirect( $title->getFullURL() );
 	}
 }
 

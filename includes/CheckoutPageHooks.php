@@ -52,6 +52,9 @@ class CheckoutPageHooks {
 		$pout->setProperty( 'accessPage', $accessPage );
 
 		// When successful, {{#checkout:}} will show "N days remaining, return now" link.
+		// TODO: this is subject to parser cache and shouldn't be added to HTML directly.
+		// It should instead be added by JavaScript, which in turn would perform an API call,
+		// which in turn will return the value of getStatusHTML().
 		$returnLink = CheckoutPageStatus::getStatusHTML( $parser->getUser(), $parser->getTitle() );
 		return [ $returnLink, 'noparse' => true, 'isHTML' => true ];
 	}
