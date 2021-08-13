@@ -5,7 +5,7 @@
 ( function () {
 	'use strict';
 
-	var $target = $( '#checkoutpage-status' );
+	var $target = $( '.checkoutpage-status' );
 
 	if ( !$target.length ) {
 		// This page has neither {{#checkout:}} nor {{#checkoutstatus:}} on it.

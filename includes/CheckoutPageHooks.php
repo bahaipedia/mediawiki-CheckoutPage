@@ -56,11 +56,7 @@ class CheckoutPageHooks {
 		$pout->setProperty( 'accessPage', $accessPage );
 
 		// When successful, {{#checkout:}} will show "N days remaining, return now" link.
-		// TODO: this is subject to parser cache and shouldn't be added to HTML directly.
-		// It should instead be added by JavaScript, which in turn would perform an API call,
-		// which in turn will return the value of getStatusHTML().
-		$returnLink = CheckoutPageStatus::getStatusHTML( $parser->getUser(), $parser->getTitle() );
-		return [ $returnLink, 'noparse' => true, 'isHTML' => true ];
+		return self::addStatusToParserOutput( $pout );
 	}
 
 	/**
@@ -72,10 +68,19 @@ class CheckoutPageHooks {
 	 * @return array
 	 */
 	public static function pfStatus( Parser $parser ) {
-		$pout = $parser->getOutput();
+		return self::addStatusToParserOutput( $parser->getOutput() );
+	}
+
+	/**
+	 * Add "checkout status" box to the page. Used by both {{#checkout:}} and {{#checkoutstatus:}}.
+	 *
+	 * @param ParserOutput $pout
+	 * @return array This value should be returned by the parser function that called this method.
+	 */
+	protected static function addStatusToParserOutput( ParserOutput $pout ) {
 		$pout->addModules( 'ext.checkoutpage.status' );
 
-		$html = Xml::tags( 'div', [ 'id' => 'checkoutpage-status' ], '' );
+		$html = Xml::tags( 'div', [ 'class' => 'checkoutpage-status' ], '' );
 		return [ $html, 'noparse' => true, 'isHTML' => true ];
 	}
 }

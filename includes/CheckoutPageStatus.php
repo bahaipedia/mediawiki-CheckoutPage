@@ -70,7 +70,7 @@ class CheckoutPageStatus {
 			$actionText = wfMessage( 'checkoutpage-status-return' )->numParams( $daysRemaining )->escaped();
 
 			return Xml::element( 'a', [
-				'class' => 'checkoutpage-status',
+				'class' => 'checkoutpage-return',
 				'href' => wfAppendQuery( $checkoutUrl, [ 'return' => 1 ] )
 			], $actionText );
 		}
@@ -82,7 +82,7 @@ class CheckoutPageStatus {
 			$actionText = wfMessage( 'checkoutpage-status-available' )->numParams( $copiesAvailable )->escaped();
 
 			return Xml::element( 'a', [
-				'class' => 'checkoutpage-status',
+				'class' => 'checkoutpage-available',
 				'href' => $checkoutUrl
 			], $actionText );
 		}
@@ -91,7 +91,7 @@ class CheckoutPageStatus {
 		$daysUntilAvailable = self::daysTo( $earliestExpiry );
 		$actionText = wfMessage( 'checkoutpage-status-unavailable' )->numParams( $daysUntilAvailable )->escaped();
 
-		return Xml::element( 'span', [ 'class' => 'checkoutpage-status' ], $actionText );
+		return Xml::element( 'span', [ 'class' => 'checkoutpage-unavailable' ], $actionText );
 	}
 
 	/**
