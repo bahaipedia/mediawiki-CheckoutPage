@@ -103,29 +103,44 @@ class CheckoutPage {
 	public static function revokeAccess( User $user, Title $title ) {
 		// To avoid code duplication, we set expiration date to "long ago in the past"
 		// and then call "revoke expired checkouts".
+		$pageId = $title->getArticleID( Title::READ_LATEST );
+		if ( !$pageId ) {
+			// Page doesn't exist (was recently deleted?)
+			return;
+		}
+
 		$dbw = wfGetDB( DB_MASTER );
 		$dbw->update( 'page_props',
 			[ 'pp_value' => 0 ],
 			[
-				'pp_page' => $title->getArticleID( Title::READ_LATEST ),
+				'pp_page' => $pageId,
 				'pp_propname' => 'checkoutExpiry.' . $user->getName()
 			],
 			__METHOD__
 		);
 
 		if ( $dbw->affectedRows() > 0 ) {
-			self::revokeExpiredCheckouts();
+			self::revokeExpiredCheckouts( $pageId );
 		}
 	}
 
 	/**
 	 * Revoke all checkouts that have expired. This can be called periodically.
-	 * @param User $user
-	 * @param Title $title
+	 * @param int $onlyThisPageId Optional: if set to page ID, revocations will affect only this page.
 	 * @return bool True if no errors, false otherwise.
 	 */
-	public static function revokeExpiredCheckouts() {
+	public static function revokeExpiredCheckouts( $onlyThisPageId = 0 ) {
 		$dbw = wfGetDB( DB_MASTER );
+		$where = [
+			'a.pp_propname ' . $dbw->buildLike( 'checkoutExpiry.', $dbw->anyString() ),
+			'a.pp_value < ' . $dbw->timestamp( wfTimestampNow() ),
+			'b.pp_propname' => 'accessPage'
+		];
+
+		if ( $onlyThisPageId ) {
+			$where['a.pp_page'] = $onlyThisPageId;
+		}
+
 		$res = $dbw->select(
 			[
 				'a' => 'page_props',
@@ -136,11 +151,7 @@ class CheckoutPage {
 				'b.pp_value AS accessPage',
 				'a.pp_page AS articleId'
 			],
-			[
-				'a.pp_propname ' . $dbw->buildLike( 'checkoutExpiry.', $dbw->anyString() ),
-				'a.pp_value < ' . $dbw->timestamp( wfTimestampNow() ),
-				'b.pp_propname' => 'accessPage'
-			],
+			$where,
 			__METHOD__,
 			[],
 			[
