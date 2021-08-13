@@ -23,7 +23,7 @@ class ApiQueryCheckoutStatus extends ApiQueryBase {
 		$statusHTML = CheckoutPageStatus::getStatusHTML( $this->getUser(), $page->getTitle() );
 
 		$result = [ 'html' => $statusHTML ];
-		$this->getResult()->addValue( null, $this->getModuleName(), $result );
+		$this->getResult()->addValue( 'query', $this->getModuleName(), $result );
 	}
 
 	public function mustBePosted() {

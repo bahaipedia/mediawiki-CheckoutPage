@@ -68,14 +68,14 @@ class CheckoutPageHooks {
 	 * It displays checkout status (whether the page is accessible or not, with "Checkout" button if yes
 	 * and with "when it will become accessible?" information if not).
 	 *
-	 * WARNING: {{#checkoutstatus:}} should NOT be used in the article itself (because the parser cache
-	 * will prevent this information from being updated), only on error pages (which are not cached).
-	 *
 	 * @param Parser $parser
 	 * @return array
 	 */
 	public static function pfStatus( Parser $parser ) {
-		$returnLink = CheckoutPageStatus::getStatusHTML( $parser->getUser(), $parser->getTitle() );
-		return [ $returnLink, 'noparse' => true, 'isHTML' => true ];
+		$pout = $parser->getOutput();
+		$pout->addModules( 'ext.checkoutpage.status' );
+
+		$html = Xml::tags( 'div', [ 'id' => 'checkoutpage-status' ], '' );
+		return [ $html, 'noparse' => true, 'isHTML' => true ];
 	}
 }

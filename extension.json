@@ -32,5 +32,21 @@
 	"APIPropModules": {
 		"checkoutstatus": "ApiQueryCheckoutStatus"
 	},
+	"ResourceFileModulePaths": {
+		"localBasePath": "modules",
+		"remoteExtPath": "CheckoutPage/modules"
+	},
+	"ResourceModules": {
+		"ext.checkoutpage.status": {
+			"scripts": "ext.checkoutpage.status.js",
+			"targets": [
+				"desktop",
+				"mobile"
+			],
+			"dependencies": [
+				"mediawiki.api"
+			]
+		}
+	},
 	"manifest_version": 2
 }
