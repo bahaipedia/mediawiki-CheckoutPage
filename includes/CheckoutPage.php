@@ -76,6 +76,9 @@ class CheckoutPage {
 		$ts->timestamp->modify( '+' . intval( $options['checkoutDays'] ) . ' days' );
 		$expiryTimestamp = $ts->getTimestamp( TS_MW );
 
+		// Ordinarily page_props will be cleared when the page is edited,
+		// however we have {{#checkout:}} reapplying these checkoutExpiry.* properties.
+		// Alternative would be to use a separate database table for expiration times.
 		$dbw = wfGetDB( DB_MASTER );
 		$dbw->insert( 'page_props',
 			[

@@ -55,6 +55,24 @@ class CheckoutPageHooks {
 		$pout->setProperty( 'checkoutDays', $checkoutDays );
 		$pout->setProperty( 'accessPage', $accessPage );
 
+		// Re-apply page properties "checkoutExpiry.<username>",
+		// so that they are not deleted when the page is edited.
+		$dbw = wfGetDB( DB_MASTER );
+		$res = $dbw->select( 'page_props',
+			[
+				'pp_propname AS prop',
+				'pp_value AS value'
+			],
+			[
+				'pp_page' => $parser->getTitle()->getArticleID( Title::READ_LATEST ),
+				'pp_propname ' . $dbw->buildLike( 'checkoutExpiry.', $dbw->anyString() )
+			],
+			__METHOD__
+		);
+		foreach ( $res as $row ) {
+			$pout->setProperty( $row->prop, $row->value );
+		}
+
 		// When successful, {{#checkout:}} will show "N days remaining, return now" link.
 		return self::addStatusToParserOutput( $pout );
 	}
