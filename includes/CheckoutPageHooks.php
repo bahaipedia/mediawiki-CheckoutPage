@@ -79,6 +79,7 @@ class CheckoutPageHooks {
 	 */
 	protected static function addStatusToParserOutput( ParserOutput $pout ) {
 		$pout->addModules( 'ext.checkoutpage.status' );
+		$pout->addModuleStyles( 'ext.checkoutpage.status.css' );
 
 		$html = Xml::tags( 'div', [ 'class' => 'checkoutpage-status' ], '' );
 		return [ $html, 'noparse' => true, 'isHTML' => true ];
