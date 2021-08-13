@@ -30,3 +30,4 @@ Please visit [[Special:CheckoutPage/{{PAGENAME}}]] to get access to this page.
 ```
 ... into the MediaWiki error message that is shown when the user doesn't have access yet.
 
+Alternatively, `{{#checkoutstatus:}}` can be used as error message. It will display either "Checkout" link (if the page is available) or "when will the page become available" (if too many users are already reading it).
