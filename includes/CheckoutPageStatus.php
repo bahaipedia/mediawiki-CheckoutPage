@@ -44,10 +44,13 @@ class CheckoutPageStatus {
 		$maxConcurrent = 1;
 		$usernameToExpiry = [];
 		$earliestExpiry = 0;
+		$allowedUsersPage = null;
 
 		foreach ( $res as $row ) {
 			if ( $row->prop === 'maxConcurrent' ) {
 				$maxConcurrent = (int)$row->value;
+			} elseif (  $row->prop === 'allowedUsersPage' ) {
+				$allowedUsersPage = $row->value;
 			} elseif ( preg_match( '/^checkoutExpiry\.(.*)$/', $row->prop, $matches ) ) {
 				$username = $matches[1];
 				$expiry = $row->value;
@@ -76,6 +79,16 @@ class CheckoutPageStatus {
 		}
 
 		// This user doesn't have access yet.
+		if ( $allowedUsersPage ) {
+			// Not available for checkout: this user is not in "allowed users" list.
+			$allowedUsers = new CheckoutPageUserList( Title::newFromText( $allowedUsersPage ) );
+			if ( !$allowedUsers->hasUser( $user ) ) {
+				$actionText = wfMessage( 'checkoutpage-status-not-allowed' )->numParams( $daysUntilAvailable )->escaped();
+
+				return Xml::element( 'span', [ 'class' => 'checkoutpage-not-allowed' ], $actionText );
+			}
+		}
+
 		$copiesAvailable = $maxConcurrent - count( $usernameToExpiry );
 		if ( $copiesAvailable > 0 ) {
 			// Possible to checkout: show "Checkout (1 copy available)" link.
