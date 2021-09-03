@@ -73,6 +73,16 @@ class CheckoutPageUserList {
 	}
 
 	/**
+	 * Returns true if user is on the list, false otherwise.
+	 * @param User $user
+	 * @return bool
+	 */
+	public function hasUser( User $user ) {
+		$this->loadUsernames();
+		return in_array( $user->getName(), $this->usernames );
+	}
+
+	/**
 	 * Add user to the list.
 	 * @param User $user
 	 * @return Status

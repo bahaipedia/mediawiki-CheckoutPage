@@ -33,20 +33,32 @@ class CheckoutPage {
 			[ 'pp_propname AS name', 'pp_value AS value' ],
 			[
 				'pp_page' => $pageId,
-				'pp_propname' => [ 'maxConcurrent', 'checkoutDays', 'accessPage' ]
+				'pp_propname' => [ 'maxConcurrent', 'checkoutDays', 'accessPage', 'allowedUsersPage' ]
 			],
 			__METHOD__
 		);
-		if ( $res->numRows() !== 3 ) {
-			throw new ErrorPageError( 'checkoutpage-error', 'checkoutpage-not-enabled-for-page' );
-		}
 
 		$options = [];
 		foreach ( $res as $row ) {
 			$options[$row->name] = $row->value;
 		}
 
-		// TODO: add username to the page $options['accessPage'],
+		if ( !isset( $options['maxConcurrent'] ) ||
+			!isset( $options['accessPage'] ) ||
+			!isset( $options['checkoutDays'] )
+		) {
+			throw new ErrorPageError( 'checkoutpage-error', 'checkoutpage-not-enabled-for-page' );
+		}
+
+		$allowedUsersPage = $options['allowedUsersPage'] ?? '';
+		if ( $allowedUsersPage ) {
+			$allowedUsers = new CheckoutPageUserList( Title::newFromText( $allowedUsersPage ) );
+			if ( !$allowedUsers->hasUser( $user ) ) {
+				return Status::newFatal( 'checkoutpage-not-allowed-for-this-user' );
+			}
+		}
+
+		// Add username to the page $options['accessPage'],
 		// but only if it has less than $options['maxConcurrent'] names already.
 		$userList = new CheckoutPageUserList( Title::newFromText( $options['accessPage'] ) );
 

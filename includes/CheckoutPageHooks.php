@@ -44,6 +44,7 @@ class CheckoutPageHooks {
 		$maxConcurrent = (int)( $options['max_concurrent_users'] ?? 0 );
 		$checkoutDays = (int)( $options['checkout_days'] ?? 0 );
 		$accessPage = trim( $options['access_page'] ?? '' );
+		$allowedUsersPage = trim( $options['allowed_users'] ?? '' );
 
 		if ( !$maxConcurrent || !$checkoutDays || !$accessPage || $maxConcurrent < 1 || $checkoutDays < 1 ) {
 			return Xml::tags( 'div', [ 'class' => 'error' ], wfMessage( 'checkoutpage-missing-params' ) );
@@ -54,6 +55,7 @@ class CheckoutPageHooks {
 		$pout->setProperty( 'maxConcurrent', $maxConcurrent );
 		$pout->setProperty( 'checkoutDays', $checkoutDays );
 		$pout->setProperty( 'accessPage', $accessPage );
+		$pout->setProperty( 'allowedUsersPage', $allowedUsersPage );
 
 		// Re-apply page properties "checkoutExpiry.<username>",
 		// so that they are not deleted when the page is edited.
