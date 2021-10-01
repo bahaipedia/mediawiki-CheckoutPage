@@ -10,6 +10,7 @@
 	"checkoutpage-missing-params": "Error: #checkout: parameters access_page, max_concurrent_users (integer >= 1), checkout_days (integer >= 1) are mandatory.",
 	"checkoutpage-not-allowed-for-this-user": "Not available for checkout: only subscribers can access this page.",
 	"checkoutpage-not-enabled-for-page": "This page can't be checked out, because checkout settings (max days, etc.) were not set for it.",
+	"checkoutpage-overriding-params-not-allowed": "Error: another page already has #checkout: with the same value of <code>access_page=</code>, but with different other parameters (checkout_days, etc.). They must have exactly the same parameters.",
 	"checkoutpage-returned": "Page returned. Thank you.",
 	"checkoutpage-status-available": "Checkout ($1 {{plural:$1|copy|copies}} available)",
 	"checkoutpage-status-not-allowed": "This page is unavailable.",

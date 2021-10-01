@@ -50,6 +50,59 @@ class CheckoutPageHooks {
 			return Xml::tags( 'div', [ 'class' => 'error' ], wfMessage( 'checkoutpage-missing-params' ) );
 		}
 
+		// Security check: verify that this page is not trying to override parameters of {{#checkout:}}
+		// on another page which uses the same value of access_page=.
+		$thisPageId = $parser->getTitle()->getArticleID( Title::READ_LATEST );
+
+		$dbw = wfGetDB( DB_MASTER );
+		$otherPageId = $dbw->selectField( 'page_props', 'pp_page',
+			[
+				'pp_propname' => 'accessPage',
+				'pp_value' => $accessPage,
+				'pp_page <> ' . $dbw->addQuotes( $thisPageId )
+			],
+			__METHOD__
+		);
+
+		if ( $otherPageId ) {
+			// At least 1 other page uses the same access_page=.
+			// All parameters of this {{#checkout:}} must be exactly the same.
+			$res = $dbw->select( 'page_props',
+				[
+					'pp_propname AS prop',
+					'pp_value AS value'
+				],
+				[
+					'pp_page' => $otherPageId
+				],
+				__METHOD__
+			);
+
+			$otherMaxConcurrent = 0;
+			$otherCheckoutDays = 0;
+			$otherAllowedUsersPage = '';
+
+			foreach ( $res as $row ) {
+				switch( $row->prop ) {
+					case 'maxConcurrent':
+						$otherMaxConcurrent = (int)$row->value;
+						break;
+					case 'checkoutDays':
+						$otherCheckoutDays = (int)$row->value;
+						break;
+					case 'allowedUsersPage':
+						$otherAllowedUsersPage = $row->value;
+				}
+			}
+
+			if ( $otherMaxConcurrent !== $maxConcurrent ||
+				$otherCheckoutDays !== $checkoutDays ||
+				$otherAllowedUsersPage !== $allowedUsersPage
+			) {
+				return Xml::tags( 'div', [ 'class' => 'error' ], wfMessage( 'checkoutpage-overriding-params-not-allowed' ) );
+			}
+		}
+
 		// Remember these options in the database.
 		$pout = $parser->getOutput();
 		$pout->setProperty( 'maxConcurrent', $maxConcurrent );
@@ -66,7 +119,7 @@ class CheckoutPageHooks {
 				'pp_value AS value'
 			],
 			[
-				'pp_page' => $parser->getTitle()->getArticleID( Title::READ_LATEST ),
+				'pp_page' => $thisPageId,
 				'pp_propname ' . $dbw->buildLike( 'checkoutExpiry.', $dbw->anyString() )
 			],
 			__METHOD__
