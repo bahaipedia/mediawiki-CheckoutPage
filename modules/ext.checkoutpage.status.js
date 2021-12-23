@@ -16,7 +16,7 @@
 	api.get( {
 		action: 'query',
 		prop: 'checkoutstatus',
-		cstitle: mw.config.get( 'wgPageName' )
+		cstitle: $target.attr( 'data-pagename' ) || mw.config.get( 'wgPageName' )
 	} ).done( function ( ret ) {
 		$target.html( ret.query.checkoutstatus.html );
 	} );

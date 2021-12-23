@@ -129,7 +129,7 @@ class CheckoutPageHooks {
 		}
 
 		// When successful, {{#checkout:}} will show "N days remaining, return now" link.
-		return self::addStatusToParserOutput( $pout );
+		return self::addStatusToParserOutput( $pout, $parser->getTitle() );
 	}
 
 	/**
@@ -137,24 +137,39 @@ class CheckoutPageHooks {
 	 * It displays checkout status (whether the page is accessible or not, with "Checkout" button if yes
 	 * and with "when it will become accessible?" information if not).
 	 *
+	 * Usage: {{#checkoutstatus:}} - for current page, {{#checkoutstatus:SomePage}} - for page "SomePage".
+	 *
 	 * @param Parser $parser
+	 * @param string $pageName
 	 * @return array
 	 */
-	public static function pfStatus( Parser $parser ) {
-		return self::addStatusToParserOutput( $parser->getOutput() );
+	public static function pfStatus( Parser $parser, $pageName ) {
+		if ( $pageName ) {
+			$title = Title::newFromText( $pageName );
+		}
+
+		if ( !$title ) {
+			$title = $parser->getTitle();
+		}
+
+		return self::addStatusToParserOutput( $parser->getOutput(), $title );
 	}
 
 	/**
 	 * Add "checkout status" box to the page. Used by both {{#checkout:}} and {{#checkoutstatus:}}.
 	 *
 	 * @param ParserOutput $pout
+	 * @param Title $title
 	 * @return array This value should be returned by the parser function that called this method.
 	 */
-	protected static function addStatusToParserOutput( ParserOutput $pout ) {
+	protected static function addStatusToParserOutput( ParserOutput $pout, Title $title ) {
 		$pout->addModules( 'ext.checkoutpage.status' );
 		$pout->addModuleStyles( 'ext.checkoutpage.status.css' );
 
-		$html = Xml::tags( 'div', [ 'class' => 'checkoutpage-status' ], '' );
+		$html = Xml::tags( 'div', [
+			'class' => 'checkoutpage-status',
+			'data-pagename' => $title->getPrefixedDBkey()
+		], '' );
 		return [ $html, 'noparse' => true, 'isHTML' => true ];
 	}
 }
